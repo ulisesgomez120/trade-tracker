@@ -1,32 +1,10 @@
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-
+import OnboardingDefaults from "./pages/OnboardingDefaults";
 function App() {
   return (
     <Router>
       <Switch>
-        <Route exact path='/'>
-          <h2>onboard/update</h2>
-          <section>
-            {/* how to make multi step form  */}
-            <form>
-              <label htmlFor='capital'>Capital</label>
-              <input id='capital' type='number' value='' />
-              <label htmlFor='max-risk'>
-                Max Risk (.5% of capital default)
-              </label>
-              <input id='max-risk' type='number' value='' />
-
-              <label htmlFor='leverage'>Leverage</label>
-              <input id='leverage' type='number' value='' />
-              <label htmlFor='positions-open'># of Open positions</label>
-              <input id='positions-open' type='number' value='' />
-              <input type='submit' title='submit' />
-            </form>
-            <Link to='/tracker' className='nav-btn'>
-              Next
-            </Link>
-          </section>
-        </Route>
+        <Route exact path='/' component={OnboardingDefaults} />
         <Route path='/tracker'>
           <h2>Step 1 & 2</h2>
           <p>
