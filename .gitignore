@@ -5,9 +5,11 @@ tradetracker-309618-1cddbe052290.json
 /.pnp
 .pnp.js
 .env
+.gql
+.env
+tradetracker-309618-1cddbe052290.json
 # testing
 /coverage
-
 # production
 /build
 

@@ -1,10 +1,37 @@
+import { useState } from "react";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import OnboardingDefaults from "./pages/OnboardingDefaults";
+const Login = () => {
+  const [loginData, setLoginData] = useState({ email: "", password: "" });
+  const login = async () => {
+    const res = await fetch("/api/getUser");
+    const data = await res.json();
+    console.log(data);
+    // window.localStorage.setItem("user", JSON.stringify(data._id));
+  };
+  return (
+    <div>
+      <input
+        type='email'
+        value={loginData.email}
+        onChange={(text) => setLoginData((cur) => (cur.email = text))}
+      />
+      <input
+        type='password'
+        value={loginData.password}
+        onChange={(text) => setLoginData((cur) => (cur.password = text))}
+      />
+      <button onClick={() => login}>submit</button>
+    </div>
+  );
+};
 function App() {
   return (
     <Router>
       <Switch>
-        <Route exact path='/' component={OnboardingDefaults} />
+        <Route exact path='/' component={Login} />
+        <Route exact path='/onboarding' component={OnboardingDefaults} />
+
         <Route path='/tracker'>
           <h2>Step 1 & 2</h2>
           <p>

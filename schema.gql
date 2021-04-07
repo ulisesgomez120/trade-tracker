@@ -1,0 +1,35 @@
+type User {
+  email: String! @unique
+  name: String!
+  trades: [Trade]
+  accountDetails: AccountDetails
+}
+type AccountDetails {
+  capital: Float!
+  risk: Float!
+  leverage: Float!
+  open_positions: Int!
+  user: User! @relation
+}
+type Trade {
+  ticker: String!
+  name: String!
+  basis: Float!
+  sale_price: Float!
+  date_purchased: Date!
+  date_sold: Date!
+  gain_loss: Float!
+  action: String!
+  asset_type: String!
+  platform: String!
+  status: String!
+  user: User! @relation
+}
+type Query {
+  userByEmail(email: String!): User!
+}
+
+type Mutation {
+  register(email: String!, password: String!, name: String!): User! @resolver
+  login(email: String!, password: String!): String! @resolver
+}
