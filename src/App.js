@@ -29,8 +29,7 @@ function App() {
   return (
     <Router>
       <Switch>
-        <Route exact path='/' component={Login} />
-        <Route exact path='/onboarding' component={OnboardingDefaults} />
+        <Route exact path='/' component={OnboardingDefaults} />
 
         <Route path='/tracker'>
           <h2>Step 1 & 2</h2>

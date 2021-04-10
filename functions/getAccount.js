@@ -2,8 +2,14 @@ const query = require("./utils/query");
 const GET_USER = `
 query {
   userByEmail(email:"ulisesgomez120@gmail.com"){
-    _id
-    name
+    accountDetails {
+      capital
+      risk
+      leverage
+      open_positions
+      _id
+    }
+    
   }
 }
   `;
