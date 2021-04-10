@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import UpdateOnboardingDefaults from "./pages/UpdateOnboardingDefaults";
 import axios from "axios";
