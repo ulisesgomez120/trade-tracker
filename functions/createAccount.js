@@ -17,16 +17,14 @@ mutation($capital: Float!, $risk: Float!,$leverage: Float!,$open_positions: Int!
 }
   `;
 exports.handler = async (event, context) => {
-  console.log("handler");
   const { capital, risk, leverage, open_positions } = JSON.parse(event.body);
-  const { data, errors } = await query(GET_USER, {
+  const { data, errors } = await query(CREATE_ACCOUNT, {
     capital,
     risk,
     leverage,
     open_positions,
   });
   if (errors) {
-    console.log("QUERY");
     return {
       statusCode: 500,
       body: JSON.stringify(errors),

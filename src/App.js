@@ -1,37 +1,35 @@
 import { useState } from "react";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-import OnboardingDefaults from "./pages/OnboardingDefaults";
-const Login = () => {
-  const [loginData, setLoginData] = useState({ email: "", password: "" });
-  const login = async () => {
-    const res = await fetch("/api/getUser");
-    const data = await res.json();
-    console.log(data);
-    // window.localStorage.setItem("user", JSON.stringify(data._id));
-  };
-  return (
-    <div>
-      <input
-        type='email'
-        value={loginData.email}
-        onChange={(text) => setLoginData((cur) => (cur.email = text))}
-      />
-      <input
-        type='password'
-        value={loginData.password}
-        onChange={(text) => setLoginData((cur) => (cur.password = text))}
-      />
-      <button onClick={() => login}>submit</button>
-    </div>
-  );
-};
+import UpdateOnboardingDefaults from "./pages/UpdateOnboardingDefaults";
+import axios from "axios";
 function App() {
   return (
     <Router>
       <Switch>
-        <Route exact path='/' component={OnboardingDefaults} />
+        <Route
+          exact
+          path='/update-account'
+          component={UpdateOnboardingDefaults}
+        />
 
-        <Route path='/tracker'>
+        <Route exact path='/'>
+          <button
+            onClick={() => {
+              axios
+                .post("/.netlify/functions/getAccount")
+                .then(({ data }) => {
+                  console.log(data);
+                  window.localStorage.setItem(
+                    "accountDetails",
+                    JSON.stringify(data.userByEmail.accountDetails)
+                  );
+                })
+                .catch((error) => {
+                  console.error("Error: catch", error);
+                });
+            }}>
+            user
+          </button>
           <h2>Step 1 & 2</h2>
           <p>
             HTF distal lines - psudo: iterator = (supply - demand =range)/ 3,
@@ -49,7 +47,7 @@ function App() {
           <input id='side' type='radio' value='side' name='trend'></input>
           <label htmlFor='down'>Down</label>
           <input id='down' type='radio' value='down' name='trend'></input>
-          <Link to='/' className='nav-btn'>
+          <Link to='/update-account' className='nav-btn'>
             Edit Defaults
           </Link>
           <article>

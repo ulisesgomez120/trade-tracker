@@ -1,20 +1,18 @@
 const query = require("./utils/query");
-const GET_USER = `
+const GET_ACCOUNT = `
 query {
   userByEmail(email:"ulisesgomez120@gmail.com"){
     accountDetails {
       capital
       risk
-      leverage
       open_positions
-      _id
+      leverage
     }
-    
   }
 }
   `;
 exports.handler = async (event, context) => {
-  const { data, errors } = await query(GET_USER);
+  const { data, errors } = await query(GET_ACCOUNT);
   if (errors) {
     return {
       statusCode: 500,

@@ -4,10 +4,10 @@ import { Link } from "react-router-dom";
 
 const OnboardingDefaults = () => {
   const [accountDetails, setAccountDetails] = useState({
-    capital: "2100",
-    risk: ".005",
-    leverage: "1",
-    open_positions: "5",
+    capital: 2100,
+    risk: 0.005,
+    leverage: 1,
+    open_positions: 5,
   });
   const updateDetails = (event) => {
     switch (event.currentTarget.id) {
@@ -74,14 +74,8 @@ const OnboardingDefaults = () => {
       />
       <button
         onClick={() => {
-          axios("/api/createAccount", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(accountDetails),
-          })
-            .then((response) => response.json())
+          axios
+            .post("/.netlify/functions/updateAccount", accountDetails)
             .then((data) => {
               console.log("Success:", data);
             })
@@ -91,7 +85,8 @@ const OnboardingDefaults = () => {
         }}>
         Submit
       </button>
-      <Link to='/tracker' className='nav-btn'>
+
+      <Link to='/' className='nav-btn'>
         Next
       </Link>
     </section>
