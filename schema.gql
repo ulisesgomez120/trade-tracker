@@ -1,7 +1,7 @@
 type User {
   email: String! @unique
   name: String!
-  trades: [Trade]
+  trades: [Trade] @relation
   accountDetails: AccountDetails
 }
 type AccountDetails {
@@ -12,17 +12,25 @@ type AccountDetails {
   user: User! @relation
 }
 type Trade {
-  ticker: String!
-  name: String!
-  basis: Float!
-  sale_price: Float!
-  date_purchased: Date!
-  date_sold: Date!
-  gain_loss: Float!
-  action: String!
-  asset_type: String!
-  platform: String!
-  status: String!
+  ticker: String
+  name: String
+  basis: Float
+  date_purchased: Time
+  action: String
+  asset_type: String
+  platform: String
+  status: String
+  atr: Float
+  trend: String
+  oe_score: Float
+  notes: String
+  sale_price: Float
+  gain_loss: Float
+  date_sold: Time
+  stop_loss: Float
+  shares_bought: Float
+  shares_sold: Float
+  risk_amount: Float
   user: User! @relation
 }
 type Query {
