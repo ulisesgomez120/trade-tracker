@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { addRow } from "../util/sheets";
@@ -38,56 +38,56 @@ const Tracker = () => {
     trend: 0,
   });
   const [accountDetails, setAccountDetails] = useState({});
-  const calcInitialOE = () => {
-    if (tradeData.action === "Long") {
-      curveLocation === "Low"
-        ? setOddEnhancer((s) => {
-            return { ...s, ...{ curve: 2 } };
-          })
-        : curveLocation === "Middle"
-        ? setOddEnhancer((s) => {
-            return { ...s, ...{ curve: 1 } };
-          })
-        : setOddEnhancer((s) => {
-            return { ...s, ...{ curve: 0 } };
-          });
-      tradeData.trend === "Up"
-        ? setOddEnhancer((s) => {
-            return { ...s, ...{ trend: 1 } };
-          })
-        : tradeData.trend === "Side"
-        ? setOddEnhancer((s) => {
-            return { ...s, ...{ trend: 0.5 } };
-          })
-        : setOddEnhancer((s) => {
-            return { ...s, ...{ trend: 0 } };
-          });
-    } else {
-      curveLocation === "Low"
-        ? setOddEnhancer((s) => {
-            return { ...s, ...{ curve: 0 } };
-          })
-        : curveLocation === "Middle"
-        ? setOddEnhancer((s) => {
-            return { ...s, ...{ curve: 1 } };
-          })
-        : setOddEnhancer((s) => {
-            return { ...s, ...{ curve: 2 } };
-          });
-      tradeData.trend === "Up"
-        ? setOddEnhancer((s) => {
-            return { ...s, ...{ trend: 0 } };
-          })
-        : tradeData.trend === "Side"
-        ? setOddEnhancer((s) => {
-            return { ...s, ...{ trend: 0.5 } };
-          })
-        : setOddEnhancer((s) => {
-            return { ...s, ...{ trend: 1 } };
-          });
-    }
-  };
-  const getCurveDivisions = () => {
+  // const calcInitialOE = () => {
+  //   if (tradeData.action === "Long") {
+  //     curveLocation === "Low"
+  //       ? setOddEnhancer((s) => {
+  //           return { ...s, ...{ curve: 2 } };
+  //         })
+  //       : curveLocation === "Middle"
+  //       ? setOddEnhancer((s) => {
+  //           return { ...s, ...{ curve: 1 } };
+  //         })
+  //       : setOddEnhancer((s) => {
+  //           return { ...s, ...{ curve: 0 } };
+  //         });
+  //     tradeData.trend === "Up"
+  //       ? setOddEnhancer((s) => {
+  //           return { ...s, ...{ trend: 1 } };
+  //         })
+  //       : tradeData.trend === "Side"
+  //       ? setOddEnhancer((s) => {
+  //           return { ...s, ...{ trend: 0.5 } };
+  //         })
+  //       : setOddEnhancer((s) => {
+  //           return { ...s, ...{ trend: 0 } };
+  //         });
+  //   } else {
+  //     curveLocation === "Low"
+  //       ? setOddEnhancer((s) => {
+  //           return { ...s, ...{ curve: 0 } };
+  //         })
+  //       : curveLocation === "Middle"
+  //       ? setOddEnhancer((s) => {
+  //           return { ...s, ...{ curve: 1 } };
+  //         })
+  //       : setOddEnhancer((s) => {
+  //           return { ...s, ...{ curve: 2 } };
+  //         });
+  //     tradeData.trend === "Up"
+  //       ? setOddEnhancer((s) => {
+  //           return { ...s, ...{ trend: 0 } };
+  //         })
+  //       : tradeData.trend === "Side"
+  //       ? setOddEnhancer((s) => {
+  //           return { ...s, ...{ trend: 0.5 } };
+  //         })
+  //       : setOddEnhancer((s) => {
+  //           return { ...s, ...{ trend: 1 } };
+  //         });
+  //   }
+  // };
+  const getCurveDivisions = useCallback(() => {
     let iterator = parseFloat(
       parseFloat(
         (calcData.htfDistalSupply - calcData.htfDistalDemand) / 3
@@ -99,7 +99,7 @@ const Tracker = () => {
     );
     tempDevisions.push(tempDevisions[0] + iterator);
     return tempDevisions;
-  };
+  }, [calcData.htfDistalDemand, calcData.htfDistalSupply]);
   const createTrade = async () => {
     axios
       .post("/.netlify/functions/createTrade", tradeData)
@@ -345,47 +345,53 @@ const Tracker = () => {
     });
   }, [oddEnhancer]);
   useEffect(() => {
-    if (calcData.ltfDistal > 0 && calcData.ltfProximal > 0) {
-      if (tradeData.action === "Long") {
-        let localRisk =
-          parseFloat(calcData.ltfProximal.toFixed(2)) -
-          (calcData.ltfDistal - parseFloat((tradeData.atr * 0.02).toFixed(2)));
-
-        setTradeData((s) => {
-          let stop =
-            calcData.ltfDistal - parseFloat((tradeData.atr * 0.02).toFixed(2));
-          let shares =
-            (accountDetails.capital * accountDetails.risk) / localRisk;
-          return { ...s, ...{ stop_loss: stop, shares: shares } };
-        });
-        setRisk(localRisk);
-      } else {
-        let localRisk = parseFloat(
-          calcData.ltfDistal +
-            parseFloat((tradeData.atr * 0.02).toFixed(2)) -
-            calcData.ltfProximal
-        );
-        setTradeData((s) => {
-          let stop =
-            calcData.ltfDistal + parseFloat((tradeData.atr * 0.02).toFixed(2));
-          let shares =
-            (accountDetails.capital * accountDetails.risk) / localRisk;
-          return { ...s, ...{ stop_loss: stop, shares: shares } };
-        });
-        setRisk(() => localRisk);
-      }
-
-      const entry = calcData.ltfProximal;
-      const [a, b] = getCurveDivisions();
-      if (entry < a) {
-        setCurveLocation("Low");
-      } else if (entry < b) {
-        setCurveLocation("Middle");
-      } else {
-        setCurveLocation("High");
-      }
+    if (calcData.ltfDistal <= 0 && calcData.ltfProximal <= 0) {
+      return;
     }
-  }, [calcData]);
+    console.log("here");
+    if (tradeData.action === "Long") {
+      let localRisk =
+        parseFloat(calcData.ltfProximal.toFixed(2)) -
+        (calcData.ltfDistal - parseFloat((tradeData.atr * 0.02).toFixed(2)));
+
+      setTradeData((s) => {
+        let stop =
+          calcData.ltfDistal - parseFloat((tradeData.atr * 0.02).toFixed(2));
+        let shares = (accountDetails.capital * accountDetails.risk) / localRisk;
+        return { ...s, ...{ stop_loss: stop, shares: shares } };
+      });
+      setRisk(localRisk);
+    } else {
+      let localRisk = parseFloat(
+        calcData.ltfDistal +
+          parseFloat((tradeData.atr * 0.02).toFixed(2)) -
+          calcData.ltfProximal
+      );
+      setTradeData((s) => {
+        let stop =
+          calcData.ltfDistal + parseFloat((tradeData.atr * 0.02).toFixed(2));
+        let shares = (accountDetails.capital * accountDetails.risk) / localRisk;
+        return { ...s, ...{ stop_loss: stop, shares: shares } };
+      });
+      setRisk(() => localRisk);
+    }
+
+    const entry = calcData.ltfProximal;
+    const [a, b] = getCurveDivisions();
+    if (entry < a) {
+      setCurveLocation("Low");
+    } else if (entry < b) {
+      setCurveLocation("Middle");
+    } else {
+      setCurveLocation("High");
+    }
+  }, [
+    calcData,
+    accountDetails,
+    tradeData.action,
+    tradeData.atr,
+    getCurveDivisions,
+  ]);
   return (
     <>
       <button

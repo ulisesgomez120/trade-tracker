@@ -16,7 +16,7 @@ export const addRow = async (row) => {
     await doc.loadInfo();
 
     const sheet = doc.sheetsByIndex[0];
-    const result = await sheet.addRow(row);
+    sheet.addRow(row);
   } catch (e) {
     console.error("Error: ", e);
   }
