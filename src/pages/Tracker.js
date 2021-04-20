@@ -10,6 +10,7 @@ const Tracker = () => {
     htfDistalDemand: 0,
     ltfDistal: 0,
     ltfProximal: 0,
+    price: 0,
   });
   const [curveLocation, setCurveLocation] = useState("");
   const [risk, setRisk] = useState(0);
@@ -127,6 +128,12 @@ const Tracker = () => {
         setCalcData({
           ...calcData,
           ...{ htfDistalDemand: event.currentTarget.valueAsNumber },
+        });
+        break;
+      case "price":
+        setCalcData({
+          ...calcData,
+          ...{ price: event.currentTarget.valueAsNumber },
         });
         break;
       default:
@@ -267,7 +274,6 @@ const Tracker = () => {
 
       return (
         <ExitContainer>
-          {curveLocation}
           <div className='exitCard'>
             <h4>5:1</h4>
             <h2>{exit5x}</h2>
@@ -348,7 +354,6 @@ const Tracker = () => {
     if (calcData.ltfDistal <= 0 && calcData.ltfProximal <= 0) {
       return;
     }
-    console.log("here");
     if (tradeData.action === "Long") {
       let localRisk =
         parseFloat(calcData.ltfProximal.toFixed(2)) -
@@ -375,16 +380,6 @@ const Tracker = () => {
       });
       setRisk(() => localRisk);
     }
-
-    const entry = calcData.ltfProximal;
-    const [a, b] = getCurveDivisions();
-    if (entry < a) {
-      setCurveLocation("Low");
-    } else if (entry < b) {
-      setCurveLocation("Middle");
-    } else {
-      setCurveLocation("High");
-    }
   }, [
     calcData,
     accountDetails,
@@ -392,6 +387,17 @@ const Tracker = () => {
     tradeData.atr,
     getCurveDivisions,
   ]);
+  useEffect(() => {
+    const price = calcData.price;
+    const [a, b] = getCurveDivisions();
+    if (price < a) {
+      setCurveLocation("Low");
+    } else if (price < b) {
+      setCurveLocation("Middle");
+    } else {
+      setCurveLocation("High");
+    }
+  }, [calcData.price]);
   return (
     <>
       <button
@@ -414,7 +420,6 @@ const Tracker = () => {
       </button>
       <Link to='/trades'>Trades</Link>
       <h2>Step 1 & 2</h2>
-      <p></p>
       <label htmlFor='distal-htf-supply'>Supply</label>
       <input
         id='distal-htf-supply'
@@ -429,6 +434,14 @@ const Tracker = () => {
         onChange={updateHTF}
         value={calcData.htfDistalDemand}
       />
+      <label htmlFor='price'>Current Price</label>
+      <input
+        id='price'
+        type='number'
+        onChange={updateHTF}
+        value={calcData.price}
+      />
+      {curveLocation}
       <p>ITF trend radio buttons</p>
       <RadioContainer>
         <div className='card'>
@@ -534,9 +547,7 @@ const Tracker = () => {
           type='number'
           onChange={updateLTF}
           value={calcData.ltfDistal}></input>
-        <Button variant='contained' color='primary'>
-          Get Exits
-        </Button>
+
         {tradeData.stop_loss > 0 ? createExits() : null}
       </article>
 
