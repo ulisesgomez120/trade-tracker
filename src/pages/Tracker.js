@@ -3,7 +3,6 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { addRow } from "../util/sheets";
 import styled from "styled-components";
-import { Button } from "@material-ui/core";
 const Tracker = () => {
   const [calcData, setCalcData] = useState({
     htfDistalSupply: 0,
@@ -275,7 +274,8 @@ const Tracker = () => {
       return (
         <ExitContainer>
           <div className='exitCard'>
-            <h4>5:1</h4>
+            <h3>5:1</h3>
+            <h4>Exit</h4>
             <h2>{exit5x}</h2>
             <h4>Stop Loss</h4>
             <h2>{tradeData.stop_loss.toFixed(2)}</h2>
@@ -283,7 +283,8 @@ const Tracker = () => {
             <h2>{Math.floor(tradeData.shares).toFixed(0)}</h2>
           </div>
           <div className='exitCard'>
-            <h4>3:1</h4>
+            <h3>3:1</h3>
+            <h4>Exit</h4>
             <h2>{exit3x}</h2>
             <h4>Stop Loss</h4>
             <h2>{tradeData.stop_loss.toFixed(2)}</h2>
@@ -294,25 +295,27 @@ const Tracker = () => {
       );
     } else {
       let exit5x = parseFloat(
-        (risk * 5 - calcData.ltfProximal).toFixed(2)
+        (calcData.ltfProximal - risk * 5).toFixed(2)
       ).toFixed(2);
       let exit3x = parseFloat(
-        (risk * 3 - calcData.ltfProximal).toFixed(2)
+        (calcData.ltfProximal - risk * 3).toFixed(2)
       ).toFixed(2);
 
       return (
         <ExitContainer>
           <div className='exitCard'>
-            <h4>5:1</h4>
-            <h2>{exit5x}</h2>
+            <h3>3:1</h3>
+            <h4>Exit</h4>
+            <h2>{exit3x}</h2>
             <h4>Stop Loss</h4>
             <h2>{tradeData.stop_loss.toFixed(2)}</h2>
             <h4>Shares</h4>
             <h2>{Math.floor(tradeData.shares).toFixed(0)}</h2>
           </div>
           <div className='exitCard'>
-            <h4>3:1</h4>
-            <h2>{exit3x}</h2>
+            <h3>5:1</h3>
+            <h4>Exit</h4>
+            <h2>{exit5x}</h2>
             <h4>Stop Loss</h4>
             <h2>{tradeData.stop_loss.toFixed(2)}</h2>
             <h4>Shares</h4>
@@ -380,13 +383,7 @@ const Tracker = () => {
       });
       setRisk(() => localRisk);
     }
-  }, [
-    calcData,
-    accountDetails,
-    tradeData.action,
-    tradeData.atr,
-    getCurveDivisions,
-  ]);
+  }, [calcData, accountDetails, tradeData.action, tradeData.atr]);
   useEffect(() => {
     const price = calcData.price;
     const [a, b] = getCurveDivisions();
@@ -397,7 +394,7 @@ const Tracker = () => {
     } else {
       setCurveLocation("High");
     }
-  }, [calcData.price]);
+  }, [calcData.price, getCurveDivisions]);
   return (
     <>
       <button
@@ -678,6 +675,26 @@ const RadioContainer = styled.div`
   }
 `;
 const ExitContainer = styled.div`
+  display: flex;
+  padding: 23px;
   .exitCard {
+    margin-left: 26px;
+    padding: 22px 18px;
+    box-shadow: 1px 2px 5px 2px rgb(0 0 0 / 10%);
+    border-radius: 6px;
+    width: 184px;
+  }
+  h2 {
+    margin-left: 5px;
+  }
+  h3 {
+    text-align: center;
+    border-bottom: 1px solid #989898;
+    padding-bottom: 10px;
+  }
+  h4 {
+    color: #989898;
+    margin-top: 9px;
+    font-weight: 500;
   }
 `;
