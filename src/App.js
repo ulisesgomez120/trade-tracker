@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import UpdateOnboardingDefaults from "./pages/UpdateOnboardingDefaults";
 import Tracker from "./pages/Tracker";
 import AllTrades from "./pages/AllTrades";
+import "./App.css";
 function App() {
   return (
     <Router>

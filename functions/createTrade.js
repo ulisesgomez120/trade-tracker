@@ -1,6 +1,6 @@
 const query = require("./utils/query");
 const CREATE_TRADE = `
-mutation($atr: Float, $basis: Float,$stop_loss: Float,$oe_score: Float, $trend: String, $status: String, $asset_type: String, $platform: String, $name: String, $ticker: String, $action: String, $date_purchased: Time, $notes: String, $shares: Float) {
+mutation($atr: Float, $basis: Float,$stop_loss: Float,$oe_score: Float, $trend: String, $status: String, $asset_type: String, $platform: String, $name: String, $ticker: String, $action: String, $date_purchased: Time, $notes: String, $shares_bought: Float,$shares_sold: Float,$sale_price: Float, $gain_loss: Float) {
   createTrade(data: {
     action: $action,
     basis: $basis,
@@ -15,22 +15,12 @@ mutation($atr: Float, $basis: Float,$stop_loss: Float,$oe_score: Float, $trend: 
     stop_loss: $stop_loss,
     oe_score: $oe_score,
     notes: $notes,
-    shares: $shares,
+    shares_bought: $shares_bought,
+    shares_sold: $shares_sold,
+    sale_price: $sale_price,
+    gain_loss: $gain_loss
     user: {connect: "295141954559148548"}
   }){
-      action
-      basis 
-      ticker
-      date_purchased 
-      name
-      platform 
-      asset_type
-      status
-      trend 
-      atr
-      stop_loss 
-      oe_score
-      shares
       _id
   }
 }
@@ -50,8 +40,11 @@ exports.handler = async (event, context) => {
     stop_loss,
     oe_score,
     notes,
-    shares,
+    shares_bought,
+    shares_sold,
   } = JSON.parse(event.body);
+  const gain_loss = 0;
+  const sale_price = 0;
   const { data, errors } = await query(CREATE_TRADE, {
     action,
     basis,
@@ -66,7 +59,10 @@ exports.handler = async (event, context) => {
     stop_loss,
     oe_score,
     notes,
-    shares,
+    shares_bought,
+    shares_sold,
+    sale_price,
+    gain_loss,
   });
   if (errors) {
     console.log(errors);

@@ -1,6 +1,6 @@
 const query = require("./utils/query");
 const UPDATE_TRADE = `
-mutation($atr: Float, $basis: Float,$stop_loss: Float,$oe_score: Float, $trend: String, $status: String, $asset_type: String, $platform: String, $name: String, $ticker: String, $action: String, $date_purchased: Time, $notes: String, $id: ID!,$date_sold: Time, $sale_price: Float, $gain_loss: Float) {
+mutation($atr: Float, $basis: Float,$stop_loss: Float,$oe_score: Float, $trend: String, $status: String, $asset_type: String, $platform: String, $name: String, $ticker: String, $action: String, $date_purchased: Time, $notes: String, $id: ID!, $date_sold: Time, $sale_price: Float, $gain_loss: Float, $shares_sold: Float, $shares_bought: Float) {
   updateTrade(id: $id, data: {
     action: $action,
     basis: $basis,
@@ -17,7 +17,9 @@ mutation($atr: Float, $basis: Float,$stop_loss: Float,$oe_score: Float, $trend: 
     notes: $notes,
     date_sold: $date_sold, 
     sale_price: $sale_price, 
-    gain_price: $gain_loss
+    gain_loss: $gain_loss,
+    shares_sold: $shares_sold,
+    shares_bought: $shares_bought
   }){
       action
       basis 
@@ -36,6 +38,8 @@ mutation($atr: Float, $basis: Float,$stop_loss: Float,$oe_score: Float, $trend: 
       sale_price
       gain_loss
       _id
+      shares_sold
+      shares_bought
   }
 }
   `;
@@ -50,6 +54,7 @@ exports.handler = async (event, context) => {
     asset_type,
     status,
     trend,
+    id,
     atr,
     stop_loss,
     oe_score,
@@ -57,8 +62,10 @@ exports.handler = async (event, context) => {
     sale_price,
     gain_loss,
     notes,
+    shares_sold,
+    shares_bought,
   } = JSON.parse(event.body);
-  const { data, errors } = await query(CREATE_TRADE, {
+  const { data, errors } = await query(UPDATE_TRADE, {
     action,
     basis,
     ticker,
@@ -66,11 +73,14 @@ exports.handler = async (event, context) => {
     name,
     platform,
     asset_type,
+    id,
     status,
     trend,
     atr,
     stop_loss,
     oe_score,
+    shares_sold,
+    shares_bought,
     date_sold,
     sale_price,
     gain_loss,

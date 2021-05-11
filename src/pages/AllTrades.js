@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
-// import axios from "axios";
+import axios from "axios";
 import { DataGrid } from "@material-ui/data-grid";
 import { Button, TextField } from "@material-ui/core";
+import { addRow } from "../util/sheets";
+
 const TradeTable = ({ rows, editTrade }) => {
   rows.forEach((obj) => {
     obj.id = obj._id;
@@ -37,14 +39,14 @@ const AllTrades = () => {
   const [rows, setRows] = useState([]);
   //pull data from rows and pass to formData
   const [formData, setFormData] = useState({
-    _id: "",
+    id: "",
     ticker: "",
     name: "",
     basis: "",
-    sale_price: 0,
+    sale_price: "",
     date_purchased: "",
     date_sold: "",
-    gain_loss: 0,
+    gain_loss: "",
     action: "",
     status: "",
     shares_sold: "",
@@ -73,72 +75,64 @@ const AllTrades = () => {
   };
 
   const editTrade = (param) => {
+    console.log(param.row);
+
     setFormData(param.row);
   };
   const updateFormData = (e) => {
-    if (e.currentTarget.type === "number") {
+    e.persist();
+    if (e.target.type === "number") {
       setFormData((s) => {
         return {
           ...s,
-          ...{ [e.currentTarget.id]: e.currentTarget.valueAsNumber },
+          ...{ [e.target.id]: parseFloat(e.target) },
         };
       });
-    } else if (e.currentTarget.type === "text") {
+    } else if (e.target.type === "text") {
       setFormData((s) => {
         return {
           ...s,
-          ...{ [e.currentTarget.id]: e.currentTarget.value },
+          ...{ [e.target.id]: e.target.value },
         };
       });
     } else {
       setFormData((s) => {
         return {
           ...s,
-          ...{ [e.currentTarget.id]: e.currentTarget.valueAsDate },
+          ...{
+            [e.target.id]: e.target.valueAsDate.toISOString(),
+          },
         };
       });
     }
   };
   useEffect(() => {
-    setRows([
-      {
-        action: "Short",
-        asset_type: "Stock",
-        atr: 1.56,
-        basis: 29.2,
-        date_purchased: "2021-04-16T14:53:42.320Z",
-        date_sold: null,
-        gain_loss: null,
-        id: "296040244921238016",
-        name: "",
-        oe_score: 9,
-        platform: "Think or Swim",
-        sale_price: null,
-        status: "Open",
-        stop_loss: 0,
-        ticker: "DRNA",
-        trend: "Up",
-        shares_bought: "0",
-        shares_sold: "25",
-        _id: "296040244921238016",
-      },
-    ]);
-    // uncomment for production
-    // axios
-    //   .post("/.netlify/functions/getTrades")
-    //   .then(({ data }) => {
-    //     setRows(data.userByEmail.trades.data);
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error: catch", error);
-    //   });
+    axios
+      .post("/.netlify/functions/getTrades")
+      .then(({ data }) => {
+        setRows(data.userByEmail.trades.data);
+      })
+      .catch((error) => {
+        console.error("Error: catch", error);
+      });
   }, []);
+  const updateTrade = (event) => {
+    event.preventDefault();
+    axios
+      .post("/.netlify/functions/updateTrade", formData)
+      .then(({ data }) => {
+        addRow(data.updateTrade);
+      })
+      .catch((error) => {
+        console.error("Error: catch", error);
+      });
+  };
   return (
     <section>
       <article style={{ width: "100%", height: "66vh" }}>
         <TradeTable rows={rows} editTrade={editTrade} />
       </article>
-      <form>
+      <form onSubmit={updateTrade}>
         <TextField
           id='action'
           type='text'
@@ -146,7 +140,7 @@ const AllTrades = () => {
           value={formData.action}
           placeholder='Action'
           variant='filled'
-          onChange={(e) => updateFormData(e)}
+          onChange={updateFormData}
           InputLabelProps={{ shrink: true }}
         />
         <TextField
@@ -156,7 +150,7 @@ const AllTrades = () => {
           value={formData.basis}
           placeholder='Basis'
           variant='filled'
-          onChange={(e) => updateFormData(e)}
+          onChange={updateFormData}
           InputLabelProps={{ shrink: true }}
         />
         <TextField
@@ -166,7 +160,7 @@ const AllTrades = () => {
           value={formData.ticker}
           placeholder='Ticker'
           variant='filled'
-          onChange={(e) => updateFormData(e)}
+          onChange={updateFormData}
           InputLabelProps={{ shrink: true }}
         />
         <TextField
@@ -176,7 +170,7 @@ const AllTrades = () => {
           value={formData.date_sold}
           placeholder='Date Sold'
           variant='filled'
-          onChange={(e) => updateFormData(e)}
+          onChange={updateFormData}
           InputLabelProps={{ shrink: true }}
         />
         <TextField
@@ -186,10 +180,7 @@ const AllTrades = () => {
           value={formData.sale_price}
           placeholder='Sale Price'
           variant='filled'
-          onChange={(e) => {
-            updateFormData(e);
-            formData.gain_loss = formData.basis - formData.sale_price;
-          }}
+          onChange={updateFormData}
           InputLabelProps={{ shrink: true }}
         />
         <TextField
@@ -199,7 +190,7 @@ const AllTrades = () => {
           value={formData.gain_loss}
           placeholder='Gain/Loss'
           variant='filled'
-          onChange={(e) => updateFormData(e)}
+          onChange={updateFormData}
           InputLabelProps={{ shrink: true }}
         />
         <TextField
@@ -209,7 +200,7 @@ const AllTrades = () => {
           value={formData.oe_score}
           placeholder='OE Score'
           variant='filled'
-          onChange={(e) => updateFormData(e)}
+          onChange={updateFormData}
           InputLabelProps={{ shrink: true }}
         />
         <TextField
@@ -219,7 +210,7 @@ const AllTrades = () => {
           value={formData.shares_bought}
           placeholder='Shares Bought'
           variant='filled'
-          onChange={(e) => updateFormData(e)}
+          onChange={updateFormData}
           InputLabelProps={{ shrink: true }}
         />
         <TextField
@@ -229,7 +220,7 @@ const AllTrades = () => {
           value={formData.shares_sold}
           placeholder='Shares Sold'
           variant='filled'
-          onChange={(e) => updateFormData(e)}
+          onChange={updateFormData}
           InputLabelProps={{ shrink: true }}
         />
         <TextField
@@ -239,7 +230,7 @@ const AllTrades = () => {
           value={formData.notes}
           placeholder='Notes'
           variant='filled'
-          onChange={(e) => updateFormData(e)}
+          onChange={updateFormData}
           InputLabelProps={{ shrink: true }}
         />
         <TextField
@@ -249,7 +240,7 @@ const AllTrades = () => {
           value={formData.status}
           placeholder='Status'
           variant='filled'
-          onChange={(e) => updateFormData(e)}
+          onChange={updateFormData}
           InputLabelProps={{ shrink: true }}
         />
         <Button
@@ -257,7 +248,10 @@ const AllTrades = () => {
             calcGainLoss();
           }}
           variant='contained'>
-          Default
+          Calc Gain/Loss
+        </Button>
+        <Button type='submit' variant='contained'>
+          Update
         </Button>
       </form>
     </section>

@@ -14,6 +14,7 @@ query {
 exports.handler = async (event, context) => {
   const { data, errors } = await query(GET_ACCOUNT);
   if (errors) {
+    console.log(errors);
     return {
       statusCode: 500,
       body: JSON.stringify(errors),

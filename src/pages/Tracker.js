@@ -1,18 +1,25 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { addRow } from "../util/sheets";
 import styled from "styled-components";
+import CurveTrend from "../components/CurveTrend";
+import LtfZones from "../components/LtfZones";
+import OddEnhancer from "../components/OddEnhancers";
+import GoodTrade from "../components/GoodTrade";
+import MultiStepForm from "../components/MultiStepForm";
 const Tracker = () => {
   const [calcData, setCalcData] = useState({
-    htfDistalSupply: 0,
-    htfDistalDemand: 0,
-    ltfDistal: 0,
-    ltfProximal: 0,
-    price: 0,
+    htfDistalSupply: "",
+    htfDistalDemand: "",
+    ltfDistal: "",
+    ltfProximal: "",
+    price: "",
+    shares: "",
+    costOfMaxShares: "",
   });
   const [curveLocation, setCurveLocation] = useState("");
   const [risk, setRisk] = useState(0);
+  const [step, setStep] = useState(0);
   const [tradeData, setTradeData] = useState({
     action: "Long",
     basis: "",
@@ -23,10 +30,11 @@ const Tracker = () => {
     asset_type: "",
     status: "Open",
     trend: "Up",
-    atr: 0,
-    stop_loss: 0,
+    atr: "",
+    stop_loss: "",
     oe_score: 0,
-    shares: 0,
+    shares_bought: 0,
+    shares_sold: 0,
     notes: "",
   });
   const [oddEnhancer, setOddEnhancer] = useState({
@@ -38,55 +46,7 @@ const Tracker = () => {
     trend: 0,
   });
   const [accountDetails, setAccountDetails] = useState({});
-  // const calcInitialOE = () => {
-  //   if (tradeData.action === "Long") {
-  //     curveLocation === "Low"
-  //       ? setOddEnhancer((s) => {
-  //           return { ...s, ...{ curve: 2 } };
-  //         })
-  //       : curveLocation === "Middle"
-  //       ? setOddEnhancer((s) => {
-  //           return { ...s, ...{ curve: 1 } };
-  //         })
-  //       : setOddEnhancer((s) => {
-  //           return { ...s, ...{ curve: 0 } };
-  //         });
-  //     tradeData.trend === "Up"
-  //       ? setOddEnhancer((s) => {
-  //           return { ...s, ...{ trend: 1 } };
-  //         })
-  //       : tradeData.trend === "Side"
-  //       ? setOddEnhancer((s) => {
-  //           return { ...s, ...{ trend: 0.5 } };
-  //         })
-  //       : setOddEnhancer((s) => {
-  //           return { ...s, ...{ trend: 0 } };
-  //         });
-  //   } else {
-  //     curveLocation === "Low"
-  //       ? setOddEnhancer((s) => {
-  //           return { ...s, ...{ curve: 0 } };
-  //         })
-  //       : curveLocation === "Middle"
-  //       ? setOddEnhancer((s) => {
-  //           return { ...s, ...{ curve: 1 } };
-  //         })
-  //       : setOddEnhancer((s) => {
-  //           return { ...s, ...{ curve: 2 } };
-  //         });
-  //     tradeData.trend === "Up"
-  //       ? setOddEnhancer((s) => {
-  //           return { ...s, ...{ trend: 0 } };
-  //         })
-  //       : tradeData.trend === "Side"
-  //       ? setOddEnhancer((s) => {
-  //           return { ...s, ...{ trend: 0.5 } };
-  //         })
-  //       : setOddEnhancer((s) => {
-  //           return { ...s, ...{ trend: 1 } };
-  //         });
-  //   }
-  // };
+
   const getCurveDivisions = useCallback(() => {
     let iterator = parseFloat(
       parseFloat(
@@ -100,231 +60,7 @@ const Tracker = () => {
     tempDevisions.push(tempDevisions[0] + iterator);
     return tempDevisions;
   }, [calcData.htfDistalDemand, calcData.htfDistalSupply]);
-  const createTrade = async () => {
-    axios
-      .post("/.netlify/functions/createTrade", tradeData)
-      .then(({ data }) => {
-        console.log(data);
-        addRow(data.createTrade);
-        // window.localStorage.setItem(
-        //   "",
-        //   JSON.stringify(data.userByEmail.accountDetails)
-        // );
-      })
-      .catch((error) => {
-        console.error("Error: catch", error);
-      });
-  };
-  const updateHTF = (event) => {
-    switch (event.currentTarget.id) {
-      case "distal-htf-supply":
-        setCalcData({
-          ...calcData,
-          ...{ htfDistalSupply: event.currentTarget.valueAsNumber },
-        });
-        break;
-      case "distal-htf-demand":
-        setCalcData({
-          ...calcData,
-          ...{ htfDistalDemand: event.currentTarget.valueAsNumber },
-        });
-        break;
-      case "price":
-        setCalcData({
-          ...calcData,
-          ...{ price: event.currentTarget.valueAsNumber },
-        });
-        break;
-      default:
-        console.log("default htf");
-    }
-  };
-  const updateTrend = (event) => {
-    setTradeData({
-      ...tradeData,
-      ...{ trend: event.currentTarget.value },
-    });
-  };
 
-  const updateAction = (event) => {
-    setTradeData({
-      ...tradeData,
-      ...{ action: event.currentTarget.value },
-    });
-  };
-  const updateAtr = (event) => {
-    setTradeData({
-      ...tradeData,
-      ...{
-        atr: parseFloat(
-          parseFloat(event.currentTarget.valueAsNumber).toFixed(2)
-        ),
-      },
-    });
-  };
-  const updateLTF = (event) => {
-    switch (event.currentTarget.id) {
-      case "proximal-ltf-entry":
-        setCalcData({
-          ...calcData,
-          ...{ ltfProximal: event.currentTarget.valueAsNumber },
-        });
-        setTradeData({
-          ...tradeData,
-          ...{ basis: parseFloat(event.currentTarget.valueAsNumber) },
-        });
-        break;
-      case "distal-ltf-entry":
-        setCalcData({
-          ...calcData,
-          ...{ ltfDistal: event.currentTarget.valueAsNumber },
-        });
-        break;
-      default:
-        console.log("default ltf");
-    }
-  };
-  const updateOddEnhancer = (event) => {
-    switch (event.currentTarget.id) {
-      case "oe-strength":
-        setOddEnhancer({
-          ...oddEnhancer,
-          ...{ strength: event.currentTarget.valueAsNumber },
-        });
-        break;
-      case "oe-time":
-        setOddEnhancer({
-          ...oddEnhancer,
-          ...{ time: event.currentTarget.valueAsNumber },
-        });
-        break;
-      case "oe-fresh":
-        setOddEnhancer({
-          ...oddEnhancer,
-          ...{ fresh: event.currentTarget.valueAsNumber },
-        });
-        break;
-      case "oe-curve":
-        setOddEnhancer({
-          ...oddEnhancer,
-          ...{ curve: event.currentTarget.valueAsNumber },
-        });
-        break;
-      case "oe-trend":
-        setOddEnhancer({
-          ...oddEnhancer,
-          ...{ trend: event.currentTarget.valueAsNumber },
-        });
-        break;
-      case "oe-profit":
-        setOddEnhancer({
-          ...oddEnhancer,
-          ...{ profit: event.currentTarget.valueAsNumber },
-        });
-        break;
-      default:
-        console.log("default oe");
-    }
-  };
-  const updateTradeData = (event) => {
-    switch (event.currentTarget.id) {
-      case "ticker":
-        setTradeData({
-          ...tradeData,
-          ...{ ticker: event.currentTarget.value },
-        });
-        break;
-      case "asset-type":
-        setTradeData({
-          ...tradeData,
-          ...{ asset_type: event.currentTarget.value },
-        });
-        break;
-      case "asset-name":
-        setTradeData({
-          ...tradeData,
-          ...{ name: event.currentTarget.value },
-        });
-        break;
-      case "platform":
-        setTradeData({
-          ...tradeData,
-          ...{ platform: event.currentTarget.value },
-        });
-        break;
-      case "notes":
-        setTradeData({
-          ...tradeData,
-          ...{ notes: event.currentTarget.value },
-        });
-        break;
-      default:
-        console.log("default updateTrade");
-    }
-  };
-  const createExits = () => {
-    if (tradeData.action === "Long") {
-      let exit5x = parseFloat(
-        (risk * 5 + calcData.ltfProximal).toFixed(2)
-      ).toFixed(2);
-      let exit3x = parseFloat(
-        (risk * 3 + calcData.ltfProximal).toFixed(2)
-      ).toFixed(2);
-
-      return (
-        <ExitContainer>
-          <div className='exitCard'>
-            <h3>5:1</h3>
-            <h4>Exit</h4>
-            <h2>{exit5x}</h2>
-            <h4>Stop Loss</h4>
-            <h2>{tradeData.stop_loss.toFixed(2)}</h2>
-            <h4>Shares</h4>
-            <h2>{Math.floor(tradeData.shares).toFixed(0)}</h2>
-          </div>
-          <div className='exitCard'>
-            <h3>3:1</h3>
-            <h4>Exit</h4>
-            <h2>{exit3x}</h2>
-            <h4>Stop Loss</h4>
-            <h2>{tradeData.stop_loss.toFixed(2)}</h2>
-            <h4>Shares</h4>
-            <h2>{Math.floor(tradeData.shares).toFixed(0)}</h2>
-          </div>
-        </ExitContainer>
-      );
-    } else {
-      let exit5x = parseFloat(
-        (calcData.ltfProximal - risk * 5).toFixed(2)
-      ).toFixed(2);
-      let exit3x = parseFloat(
-        (calcData.ltfProximal - risk * 3).toFixed(2)
-      ).toFixed(2);
-
-      return (
-        <ExitContainer>
-          <div className='exitCard'>
-            <h3>3:1</h3>
-            <h4>Exit</h4>
-            <h2>{exit3x}</h2>
-            <h4>Stop Loss</h4>
-            <h2>{tradeData.stop_loss.toFixed(2)}</h2>
-            <h4>Shares</h4>
-            <h2>{Math.floor(tradeData.shares).toFixed(0)}</h2>
-          </div>
-          <div className='exitCard'>
-            <h3>5:1</h3>
-            <h4>Exit</h4>
-            <h2>{exit5x}</h2>
-            <h4>Stop Loss</h4>
-            <h2>{tradeData.stop_loss.toFixed(2)}</h2>
-            <h4>Shares</h4>
-            <h2>{Math.floor(tradeData.shares).toFixed(0)}</h2>
-          </div>
-        </ExitContainer>
-      );
-    }
-  };
   useEffect(() => {
     let account = window.localStorage.getItem("accountDetails");
     if (account) {
@@ -358,34 +94,47 @@ const Tracker = () => {
       return;
     }
     if (tradeData.action === "Long") {
+      let distalMinusAtr =
+        calcData.ltfDistal - parseFloat((tradeData.atr * 0.02).toFixed(2));
       let localRisk =
-        parseFloat(calcData.ltfProximal.toFixed(2)) -
-        (calcData.ltfDistal - parseFloat((tradeData.atr * 0.02).toFixed(2)));
+        parseFloat(calcData.ltfProximal.toFixed(2)) - distalMinusAtr;
 
       setTradeData((s) => {
-        let stop =
-          calcData.ltfDistal - parseFloat((tradeData.atr * 0.02).toFixed(2));
+        let stop = distalMinusAtr;
+        return { ...s, ...{ stop_loss: parseFloat(stop) } };
+      });
+      setCalcData((s) => {
         let shares = (accountDetails.capital * accountDetails.risk) / localRisk;
-        return { ...s, ...{ stop_loss: stop, shares: shares } };
+        let cost = shares * s.ltfProximal;
+        return { ...s, ...{ shares: shares, costOfMaxShares: cost } };
       });
       setRisk(localRisk);
     } else {
-      let localRisk = parseFloat(
-        calcData.ltfDistal +
-          parseFloat((tradeData.atr * 0.02).toFixed(2)) -
-          calcData.ltfProximal
+      let distalPlusAtr = parseFloat(
+        calcData.ltfDistal + parseFloat((tradeData.atr * 0.02).toFixed(2))
       );
+      let localRisk = distalPlusAtr - calcData.ltfProximal;
+
       setTradeData((s) => {
-        let stop =
-          calcData.ltfDistal + parseFloat((tradeData.atr * 0.02).toFixed(2));
+        let stop = distalPlusAtr;
+        return { ...s, ...{ stop_loss: parseFloat(stop) } };
+      });
+      setCalcData((s) => {
         let shares = (accountDetails.capital * accountDetails.risk) / localRisk;
-        return { ...s, ...{ stop_loss: stop, shares: shares } };
+        let cost = shares * s.ltfProximal;
+        return { ...s, ...{ shares: shares, costOfMaxShares: cost } };
       });
       setRisk(() => localRisk);
     }
-  }, [calcData, accountDetails, tradeData.action, tradeData.atr]);
+  }, [
+    calcData.ltfDistal,
+    calcData.ltfProximal,
+    accountDetails,
+    tradeData.action,
+    tradeData.atr,
+  ]);
   useEffect(() => {
-    const price = calcData.price;
+    const price = calcData.ltfProximal;
     const [a, b] = getCurveDivisions();
     if (price < a) {
       setCurveLocation("Low");
@@ -394,307 +143,71 @@ const Tracker = () => {
     } else {
       setCurveLocation("High");
     }
-  }, [calcData.price, getCurveDivisions]);
+  }, [calcData.ltfProximal, getCurveDivisions]);
   return (
-    <>
-      <button
-        onClick={() => {
-          createTrade();
-          // axios
-          //   .post("/.netlify/functions/getAccount")
-          //   .then(({ data }) => {
-          //     console.log(data);
-          //     window.localStorage.setItem(
-          //       "accountDetails",
-          //       JSON.stringify(data.userByEmail.accountDetails)
-          //     );
-          //   })
-          //   .catch((error) => {
-          //     console.error("Error: catch", error);
-          //   });
-        }}>
-        user
-      </button>
-      <Link to='/trades'>Trades</Link>
-      <h2>Step 1 & 2</h2>
-      <label htmlFor='distal-htf-supply'>Supply</label>
-      <input
-        id='distal-htf-supply'
-        type='number'
-        onChange={updateHTF}
-        value={calcData.htfDistalSupply}
-      />
-      <label htmlFor='distal-htf-demand'>Demand</label>
-      <input
-        id='distal-htf-demand'
-        type='number'
-        onChange={updateHTF}
-        value={calcData.htfDistalDemand}
-      />
-      <label htmlFor='price'>Current Price</label>
-      <input
-        id='price'
-        type='number'
-        onChange={updateHTF}
-        value={calcData.price}
-      />
-      {curveLocation}
-      <p>ITF trend radio buttons</p>
-      <RadioContainer>
-        <div className='card'>
-          <label htmlFor='up'>
-            <input
-              id='up'
-              className='radio'
-              type='radio'
-              value='Up'
-              onChange={updateTrend}
-              checked={tradeData.trend === "Up"}
-              name='trend'
-            />
-            <p>Up</p>
-          </label>
-        </div>
-
-        <div className='card'>
-          <label htmlFor='side'>
-            <input
-              id='side'
-              className='radio'
-              type='radio'
-              value='Side'
-              onChange={updateTrend}
-              checked={tradeData.trend === "Side"}
-              name='trend'
-            />
-            <p>Side</p>
-          </label>
-        </div>
-        <div className='card'>
-          <label htmlFor='down'>
-            <input
-              id='down'
-              className='radio'
-              type='radio'
-              value='Down'
-              onChange={updateTrend}
-              checked={tradeData.trend === "Down"}
-              name='trend'
-            />
-            <p>Down</p>
-          </label>
-        </div>
-      </RadioContainer>
-      <Link to='/update-account' className='nav-btn'>
-        Edit Defaults
-      </Link>
-      <article>
-        <h2>LTF zones</h2>
-        <p>Action buy/sell</p>
-        <RadioContainer>
-          <div className='card'>
-            <label htmlFor='long'>
-              <input
-                id='long'
-                type='radio'
-                className='radio'
-                onChange={updateAction}
-                value='Long'
-                checked={tradeData.action === "Long"}
-                name='action'
-              />
-              <p>Long</p>
-            </label>
-          </div>
-          <div className='card'>
-            <label htmlFor='short'>
-              <input
-                id='short'
-                type='radio'
-                className='radio'
-                value='Short'
-                checked={tradeData.action === "Short"}
-                onChange={updateAction}
-                name='action'
-              />
-              <p>Short</p>
-            </label>
-          </div>
-        </RadioContainer>
-        <label htmlFor='atr-daily'>ATR Daily</label>
-        <input
-          id='atr-daily'
-          type='number'
-          onChange={updateAtr}
-          value={calcData.atr}
+    <Main>
+      <Header>
+        <Link to='/trades'>Trades</Link>
+        <Link to='/update-account' className='nav-btn'>
+          Edit Defaults
+        </Link>
+      </Header>
+      <MultiStepForm step={step} setStep={setStep}>
+        <CurveTrend
+          tradeData={tradeData}
+          calcData={calcData}
+          setTradeData={setTradeData}
+          setCalcData={setCalcData}
         />
-        <p>
-          Entry distal/ proximal, produces two exit points with 5/1 and 3/1
-          reward/risk *calcs distal +/- 2% of daily atr
-        </p>
-        <label htmlFor='proximal-ltf-entry'>Proximal</label>
-        <input
-          id='proximal-ltf-entry'
-          type='number'
-          onChange={updateLTF}
-          value={calcData.ltfProximal}></input>
-        <label htmlFor='distal-ltf-entry'>Distal</label>
-        <input
-          id='distal-ltf-entry'
-          type='number'
-          onChange={updateLTF}
-          value={calcData.ltfDistal}></input>
-
-        {tradeData.stop_loss > 0 ? createExits() : null}
-      </article>
-
-      <article>
-        <h2>Odd enhancers</h2>
-
-        {tradeData.oe_score}
-        <p>Strength 2</p>
-        <input
-          id='oe-strength'
-          type='number'
-          max='2'
-          onChange={updateOddEnhancer}
-          min='0'
-          value={oddEnhancer.strength}
+        <LtfZones
+          tradeData={tradeData}
+          calcData={calcData}
+          setTradeData={setTradeData}
+          setCalcData={setCalcData}
+          risk={risk}
         />
-        <p>time 1</p>
-        <input
-          id='oe-time'
-          type='number'
-          max='1'
-          min='0'
-          onChange={updateOddEnhancer}
-          value={oddEnhancer.time}
+        <OddEnhancer
+          tradeData={tradeData}
+          calcData={calcData}
+          risk={risk}
+          oddEnhancer={oddEnhancer}
+          setOddEnhancer={setOddEnhancer}
+          curveLocation={curveLocation}
         />
-        <p>fresh 2</p>
-        <input
-          id='oe-fresh'
-          type='number'
-          max='2'
-          min='0'
-          onChange={updateOddEnhancer}
-          value={oddEnhancer.fresh}
-        />
-        <p>curve 2</p>
-        <input
-          id='oe-curve'
-          type='number'
-          max='2'
-          min='0'
-          onChange={updateOddEnhancer}
-          value={oddEnhancer.curve}
-        />
-        <p>profit zone 2</p>
-        <input
-          id='oe-profit'
-          type='number'
-          max='2'
-          min='0'
-          onChange={updateOddEnhancer}
-          value={oddEnhancer.profit}
-        />
-        <p>trend 1</p>
-        <input
-          id='oe-trend'
-          type='number'
-          max='1'
-          min='0'
-          onChange={updateOddEnhancer}
-          value={oddEnhancer.trend}
-        />
-        <h2>if good then ... 8.5+</h2>
-        <p>Ticker</p>
-        <input
-          id='ticker'
-          type='text'
-          onChange={updateTradeData}
-          value={tradeData.ticker}
-        />
-        <p>asset name</p>
-        <input
-          id='asset-name'
-          type='text'
-          onChange={updateTradeData}
-          value={tradeData.name}
-        />
-        <p>platform</p>
-        <input
-          id='platform'
-          type='text'
-          onChange={updateTradeData}
-          value={tradeData.platform}
-        />
-        <p>asset type</p>
-        <input
-          id='asset-type'
-          type='text'
-          onChange={updateTradeData}
-          value={tradeData.asset_type}
-        />
-        <p>Notes</p>
-        <input
-          id='notes'
-          type='text'
-          onChange={updateTradeData}
-          value={tradeData.notes}
-        />
-        <button
-          onClick={() =>
-            setTradeData({
-              ...tradeData,
-              ...{ date_purchased: new Date().toISOString() },
-            })
-          }>
-          date{" "}
-        </button>
-      </article>
-    </>
+        <GoodTrade tradeData={tradeData} setTradeData={setTradeData} />
+      </MultiStepForm>
+    </Main>
   );
 };
 
 export default Tracker;
-
-const RadioContainer = styled.div`
-  display: flex;
-  max-width: 666px;
-  .card {
-    background-color: steelblue;
-    .radio {
-      display: none;
-    }
-    p {
-      padding: 30px;
-    }
-    .radio:checked + p {
-      border: 2px solid red;
-    }
+const Main = styled.main`
+  background-color: #222222;
+  height: 100vh;
+  color: white;
+  .MuiFormControl-root {
+    margin: 12px;
+  }
+  .MuiInputLabel-root {
+    color: white;
+  }
+  .MuiInput-underline:before {
+    border-bottom: 1px solid whitesmoke;
+  }
+  .MuiInputBase-input {
+    color: white;
   }
 `;
-const ExitContainer = styled.div`
+const Header = styled.header`
   display: flex;
-  padding: 23px;
-  .exitCard {
-    margin-left: 26px;
-    padding: 22px 18px;
-    box-shadow: 1px 2px 5px 2px rgb(0 0 0 / 10%);
-    border-radius: 6px;
-    width: 184px;
+  justify-content: flex-end;
+  padding: 16px 23px;
+  a {
+    margin-right: 10px;
+    text-decoration: none;
+    color: #3f51b5;
   }
-  h2 {
-    margin-left: 5px;
-  }
-  h3 {
-    text-align: center;
-    border-bottom: 1px solid #989898;
-    padding-bottom: 10px;
-  }
-  h4 {
-    color: #989898;
-    margin-top: 9px;
-    font-weight: 500;
+  a:visited {
+    color: #3f51b5;
   }
 `;
