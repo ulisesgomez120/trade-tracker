@@ -16,7 +16,6 @@ function App() {
 
         <Route exact path='/' component={Tracker} />
         <Route path='/trades' component={AllTrades} />
-        <Route path='/trade/:trade_id'></Route>
       </Switch>
     </Router>
   );

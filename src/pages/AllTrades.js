@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import styled from "styled-components";
 import { DataGrid } from "@material-ui/data-grid";
 import { Button, TextField } from "@material-ui/core";
 
@@ -26,6 +27,7 @@ const TradeTable = ({ rows, editTrade }) => {
 
   return (
     <DataGrid
+      style={{ color: "white" }}
       rows={rows}
       onRowClick={(param) => editTrade(param)}
       columns={columns}
@@ -125,7 +127,7 @@ const AllTrades = () => {
       });
   };
   return (
-    <section>
+    <Section>
       <article style={{ width: "100%", height: "66vh" }}>
         <TradeTable rows={rows} editTrade={editTrade} />
       </article>
@@ -251,8 +253,23 @@ const AllTrades = () => {
           Update
         </Button>
       </form>
-    </section>
+    </Section>
   );
 };
 
 export default AllTrades;
+
+const Section = styled.section`
+  .MuiFormControl-root {
+    margin: 12px;
+  }
+  .MuiInputLabel-root {
+    color: white;
+  }
+  .MuiInput-underline:before {
+    border-bottom: 1px solid whitesmoke;
+  }
+  .MuiInputBase-input {
+    color: white;
+  }
+`;
